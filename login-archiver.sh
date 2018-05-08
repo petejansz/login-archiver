@@ -24,6 +24,7 @@
 # Check usage.
 #
 
+ARCHIVER_HOME=/files/db2/scripts/login-archiver
 . $ARCHIVER_HOME/archiver-sh-lib.sh
 . /files/db2/gtkinst1/.bashrc
 

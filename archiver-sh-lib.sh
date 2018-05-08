@@ -25,7 +25,6 @@
 
 DBNAME=PDDB
 SCHEMA=GMS4
-ARCHIVER_HOME=/files/db2/scripts/login-archiver
 DEFAULT_DB2_SCRIPT=$ARCHIVER_HOME/login-archiver.db2
 DB2_SCRIPT=$DEFAULT_DB2_SCRIPT
 export TZ='America/Los_Angeles'
