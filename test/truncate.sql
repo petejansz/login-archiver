@@ -1,0 +1,3 @@
+TRUNCATE GMS4.sms_user_login_archive
+DROP STORAGE
+IMMEDIATE;

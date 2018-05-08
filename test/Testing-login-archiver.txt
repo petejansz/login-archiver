@@ -1,0 +1,30 @@
+Testing the Login Archiver
+
+1. Identify which login_id should be archived
+   
+    (   -- real people:
+        login_date < ( current date - 36 months ) 
+    )
+    or
+    (   -- automated monitor accounts:
+        login_date < ( current date - 7 days ) 
+        and key_access_value in 
+        (
+            'calottomobileadm@gmail.com',
+            'nota2ndchancewinner@gmail.com',
+            'cslmobile1@gmail.com',
+            'thirtyplus@calottery.com',
+            'dca_ren_staff@gtech.com'
+        )
+    )
+    
+    Option change login table login_date:
+        Edit, run change-login-date.sql
+    Run what-should-be-archived.sql
+
+2. Run archiver
+3. Confirm what should have been archived was archived
+3.1 Confirm login, login_date, key_access_value not in login table
+        Run what-should-be-archived.sql
+3.2 Confirm login, login_date, key_access_value exist in the GMS4.sms_user_login_archive table.
+        Run query-archive-table.sql
