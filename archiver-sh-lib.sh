@@ -65,13 +65,16 @@ check_run_schedule()
 }
 
 # options parser:
-OPTS=$(getopt -o dhql:m: --long quiet,db2-script:,last-maint-hr:,help,max-archive-passes: -n 'parse-options' -- "$@")
-if [ $? != 0 ] ; then echo "Failed parsing options." >&2 ; exit 1 ; fi
+OPTS=$(getopt -o d:hql:m: --long quiet,db2-script:,last-maint-hr:,help,max-archive-passes: -n 'parse-options' -- "$@")
+if [ $? != 0 ]; then 
+  echo "Failed parsing options." >&2 
+  exit 1 
+fi
 eval set -- "$OPTS"
 
 while true; do
   case "$1" in
-    -d | --db2-script ) DB2_SCRIPT="$2"; shift ;;
+    -d | --db2-script ) DB2_SCRIPT="$2"; shift; shift ;;
     -h | --help )    HELP=true; shift ;;
     -q | --quiet ) QUIET=true; shift  ;; 
     -l | --last-maint-hr ) LAST_MAINT_HOUR="$2"; shift; shift ;;
