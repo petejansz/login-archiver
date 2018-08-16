@@ -23,13 +23,9 @@ insert into GMS4.sms_user_login_archive
         current date
     from GMS4.sms_user_login
     where
-    (   -- real people:
-        login_date < ( current date - 36 months ) 
-    )
-    or
-    (   -- automated monitor accounts:
-        login_date < ( current date - 7 days ) 
-        and key_access_value in 
+    (   -- Runscope, automated monitor accounts:
+        login_date < ( current date - 7 days ) and
+        key_access_value in 
         (
             'calottomobileadm@gmail.com',
             'nota2ndchancewinner@gmail.com',
@@ -37,6 +33,10 @@ insert into GMS4.sms_user_login_archive
             'thirtyplus@calottery.com',
             'dca_ren_staff@gtech.com'
         )
+    )
+    or
+    (   -- real people:
+        login_date < ( current date - 36 months ) 
     )
 FETCH first 10000 rows only;
 commit;

@@ -8,6 +8,7 @@
 #
 #   REV     DATE       BY        DESCRIPTION
 #   ----  -----------  --------  ------------------------------------------
+#   1.01  2018-Jul-18   pjansz   Create DB2 history log file
 #   1.00  2018-May-04   pjansz   Initial release.
 #   -----------------------------------------------------------------------
 #     This item is the property of GTECH Corporation, Providence,
@@ -21,18 +22,19 @@
 #
 #     Copyright (c) 2018 GTECH Corporation.  All rights reserved.
 #   -----------------------------------------------------------------------
-# Check usage.
 #
 
 ARCHIVER_HOME=/files/db2/scripts/login-archiver
 . $ARCHIVER_HOME/archiver-sh-lib.sh
-. /files/db2/gtkinst1/.bashrc
 
-LOGFILE=$(basename $0| sed "s/\.sh//g")
-LOGFILE="/db2dumps/output_logs/${LOGFILE}.log-$(date +%F)" 
+BASENAME=$(basename $0| sed "s/\.sh//g")
+LOGFILE="/db2dumps/output_logs/${BASENAME}.log-$(date +%F)" 
+HISTORYLOG="/db2dumps/output_logs/${BASENAME}-history.log" 
 
 logit "Login table archiver starting with $DB2_SCRIPT" 
+logit "LAST_MAINT_HOUR=$LAST_MAINT_HOUR, MAX_ARCHIVE_PASSES=$MAX_ARCHIVE_PASSES" 
 logit "Logging output to $LOGFILE"
+logit "DB2 history: $HISTORYLOG"
 
 if [ ! -e "$DB2_SCRIPT" ]; then
   logit "ERROR: File not found: DB2_SCRIPT $DB2_SCRIPT" 
@@ -65,7 +67,7 @@ while [ $EXIT_CODE -eq 0 ]; do
   check_run_schedule
   let ARCHIVE_PASS_COUNT++
   logit "Archive pass: $ARCHIVE_PASS_COUNT"
-  db2 -mstz $LOGFILE -vf $DB2_SCRIPT
+  db2 -mstz $LOGFILE -l $HISTORYLOG -vf $DB2_SCRIPT
   EXIT_CODE=$?
   ROWS_AFFECTED=$(grep "rows affected" $LOGFILE | tail -1 | cut -d: -f2 | xargs)
 
