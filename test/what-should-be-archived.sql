@@ -22,5 +22,5 @@ or
         'dca_ren_staff@gtech.com'
     )
 )
-FETCH first 10000 rows only;
+FETCH first 10 rows only;
 commit;

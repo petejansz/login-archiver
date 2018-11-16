@@ -20,13 +20,11 @@
 #
 #     Copyright (c) 2018 GTECH Corporation.  All rights reserved.
 #   -----------------------------------------------------------------------
-# Check usage.
 #
 
 DBNAME=PDDB
 SCHEMA=GMS4
-DEFAULT_DB2_SCRIPT=$ARCHIVER_HOME/login-archiver.db2
-DB2_SCRIPT=$DEFAULT_DB2_SCRIPT
+DB2_SCRIPT=
 export TZ='America/Los_Angeles'
 QUIET=false
 HELP=false
@@ -35,9 +33,8 @@ let MAX_ARCHIVE_PASSES=200
 
 help()
 {
-  echo "USAGE: $(basename $0) [options]"
+  echo "USAGE: $(basename $0) [options] -d | --db2-script filename"
   echo "  options"
-  echo "  -d | --db2-script filename (default=${DEFAULT_DB2_SCRIPT})"
   echo "  -l | --last-maint-hr num (default=6 ${TZ})"
   echo "  -m | --max-archive-passes num (default=200)"
   echo "  -q | --quiet"
@@ -74,17 +71,17 @@ eval set -- "$OPTS"
 
 while true; do
   case "$1" in
-    -d | --db2-script ) DB2_SCRIPT="$2"; shift; shift ;;
-    -h | --help )    HELP=true; shift ;;
-    -q | --quiet ) QUIET=true; shift  ;; 
-    -l | --last-maint-hr ) LAST_MAINT_HOUR="$2"; shift; shift ;;
+    -d | --db2-script )         DB2_SCRIPT="$2"; shift; shift ;;
+    -h | --help )               HELP=true; shift ;;
+    -q | --quiet )              QUIET=true; shift  ;; 
+    -l | --last-maint-hr )      LAST_MAINT_HOUR="$2"; shift; shift ;;
     -m | --max-archive-passes ) MAX_ARCHIVE_PASSES="$2"; shift; shift ;;
     -- ) shift; break ;;
-    * ) break ;;
+     * ) break ;;
   esac
 done
 
-if [ "$HELP" == 'true' ]; then
+if [[ "$HELP" == 'true' || -z "$DB2_SCRIPT" ]]; then
   help
   exit 1
 fi

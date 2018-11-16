@@ -8,6 +8,7 @@
 #
 #   REV     DATE       BY        DESCRIPTION
 #   ----  -----------  --------  ------------------------------------------
+#   1.10  2018-Nov-13   pjansz   Support archiving other tables.
 #   1.01  2018-Jul-18   pjansz   Create DB2 history log file
 #   1.00  2018-May-04   pjansz   Initial release.
 #   -----------------------------------------------------------------------
@@ -50,7 +51,7 @@ if [[ "${HADR_ENABLED}" = "HADR Status" ]]; then
    HADR_ROLE=$(db2 get snapshot for database on ${DBNAME} | grep -A15 'HADR Status' | grep Role | cut -d= -f2 | cut -c2-)
 
    if [[ "${HADR_ROLE}" = "Standby" ]]; then
-      logit "ERROR: Login table archive process cannot be performed on HADR standby server" 
+      logit "ERROR: Archive process cannot be performed on HADR standby server" 
       exit 1
    fi
 fi
