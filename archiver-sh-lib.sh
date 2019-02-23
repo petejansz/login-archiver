@@ -52,13 +52,48 @@ logit()
   echo "${LOG_MSG}" >> $LOGFILE
 }
 
-check_run_schedule()
+# Check to see if HADR is being run on the system
+exit_if_hadr_standby()
+{
+  HADR_ENABLED=$(db2 get snapshot for database on ${DBNAME} | grep -A0 'HADR Status' | cut -c1-11)
+  if [[ "${HADR_ENABLED}" = "HADR Status" ]]; then
+    HADR_ROLE=$(db2 get snapshot for database on ${DBNAME} | grep -A15 'HADR Status' | grep Role | cut -d= -f2 | cut -c2-)
+    if [[ "${HADR_ROLE}" = "Standby" ]]; then
+      logit "ERROR: Archive process cannot be run on HADR standby server"
+      exit 1
+    fi
+  fi
+}
+
+is_maint_window() # 'true' if in maint window else return 'false'
 {
   CUR_HOUR=$(date +%H)
+  IS=true
   if [ "$CUR_HOUR" -ge "$LAST_MAINT_HOUR" ]; then
-    logit "Exiting. Current time hour $CUR_HOUR >= LAST_MAINT_HOUR=$LAST_MAINT_HOUR"
-    exit 0
+    IS=false
   fi
+
+  echo $IS
+}
+
+# If $1, error code != 0 and SQL0100W in logfile, then we had an empty table error, which is ok
+# so return 0 else some other error, return the input error code.
+isEmptyTableError() # args : exitCode
+{
+  db2ExitCode=$1
+  exitCode=0
+  if [[ $db2ExitCode != 0 ]]; then
+    EMPTY_TABLE=$(grep -c SQL0100W $LOGFILE)
+
+    if [[ "$EMPTY_TABLE" -gt 0 ]]; then
+      exitCode=0
+    else
+      exitCode=$db2ExitCode
+    fi
+
+  fi
+
+  echo $exitCode
 }
 
 # options parser:
