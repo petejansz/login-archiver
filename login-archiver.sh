@@ -8,6 +8,7 @@
 #
 #   REV     DATE       BY        DESCRIPTION
 #   ----  -----------  --------  --------------------------------------------------------------------------
+#   1.20  2019-Mar-12   pjansz   Support update statements, export DBNAME=GMS4 (dev dbname)
 #   1.13  2019-Feb-20   pjansz   Ren check_run_schedule to is_maint_window, return true|false, don't exit
 #   1.12  2019-Feb-19   pjansz   Add better logic handling db2 no-rows-found error and DELETE rows affected
 #   1.11  2019-Feb-12   pjansz   Log each SQL script to its own log files.
@@ -84,7 +85,7 @@ while [ $EXIT_CODE -eq 0 ]; do
 
     EXIT_CODE=$(isEmptyTableError $DB2_EXIT_CODE)
     if [[ $? -eq 0 ]]; then
-      ROWS_AFFECTED=$(grep -C 1 "^DELETE" $LOGFILE | tail -3 | grep "rows affected" | tail -1 | cut -d: -f2 | xargs)
+      ROWS_AFFECTED=$(grep -iC 1  -e "^DELETE" -e "^UPDATE" $LOGFILE | tail -3 | grep "rows affected" | tail -1 | cut -d: -f2 | xargs)
       if [ -z "$ROWS_AFFECTED" ]; then
         let ROWS_AFFECTED=0
       fi
