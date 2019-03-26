@@ -22,7 +22,9 @@
 #   -----------------------------------------------------------------------
 #
 
-DBNAME=PDDB
+if [ -z "$DBNAME" ]; then
+  DBNAME=PDDB
+fi
 SCHEMA=GMS4
 DB2_SCRIPT=
 export TZ='America/Los_Angeles'
@@ -35,8 +37,8 @@ help()
 {
   echo "USAGE: $(basename $0) [options] -d | --db2-script filename"
   echo "  options"
-  echo "  -l | --last-maint-hr num (default=6 ${TZ})"
-  echo "  -m | --max-archive-passes num (default=200)"
+  echo "  -l | --last-maint-hr num (default=${LAST_MAINT_HOUR} ${TZ})"
+  echo "  -m | --max-archive-passes num (default=${MAX_ARCHIVE_PASSES})"
   echo "  -q | --quiet"
 }
 
