@@ -38,11 +38,10 @@
 -- calottomobileadm@gmail.com
 --
 
-
 -- {query14}: THIS DEALS WITH PLAYER WHO HAVE > 5 LOGINS.
 --           Consume {query3} and insert into the archive table
 insert into GMS4.sms_user_login_archive
-    SELECT
+    (
         login_id,
         physical_customer_data_id,
         contract_identity,
@@ -57,6 +56,23 @@ insert into GMS4.sms_user_login_archive
         login_type_id,
         api_key,
         device_id,
+        archive_date
+    )
+    SELECT
+        login_id,
+        physical_customer_data_id,
+        contract_identity,
+        contract_type_id,
+        key_access_value,
+        key_access_type_id,
+        ext_system_id,
+        login_date,
+        logout_date,
+        null,
+        provider_id,
+        login_type_id,
+        api_key,
+        null,
         CURRENT DATE
     FROM
         SMS_USER_LOGIN
@@ -74,29 +90,24 @@ insert into GMS4.sms_user_login_archive
                     -- {query12}: for each of the customers that {query1} yields, fetch all their
                     --           logins _AND ORDER BY_ login_id (clustered order)
                     SELECT
-                        row_number() over (partition BY physical_customer_data_id ORDER BY login_date
-                        DESC) AS user_login_number,
-                        login_id
-                    FROM
-                        sms_user_login
+                        row_number() over (partition BY physical_customer_data_id ORDER BY login_date DESC) AS user_login_number, login_id
+                    FROM GMS4.sms_user_login
                     WHERE
                         physical_customer_data_id IN
                         (
-                            --
                             -- {query11}: find the first 100 customers that have more than
                             --           5 login records. Order it just so if we're monitoring
                             --           we can keep an eye on the culling of a specific player's
                             --           data
                             SELECT
                                 physical_customer_data_id
-                            FROM
-                                sms_user_login
+                            FROM GMS4.sms_user_login
                             WHERE
-                                 physical_customer_data_id NOT IN (5387223, 5390759)
+                                 physical_customer_data_id NOT IN (5387223, 5390759, 616064)
                             GROUP BY
                                 physical_customer_data_id
                             HAVING
-                                COUNT(physical_customer_data_id) > 5
+                                COUNT(physical_customer_data_id) > 1
                             ORDER BY
                                 physical_customer_data_id
                             FETCH
@@ -106,7 +117,7 @@ insert into GMS4.sms_user_login_archive
                         login_id)
                     -- {query12}
             WHERE
-                user_login_number > 5
+                user_login_number > 1
             ORDER BY
                 LOGIN_ID
             FETCH
@@ -117,7 +128,7 @@ commit;
 -- {query22}: consume all the login_id's from {query21} whose login_date is more than 
 --            three years old, pull the record and insert into archive.
 insert into GMS4.sms_user_login_archive
-    SELECT
+    (
         login_id,
         physical_customer_data_id,
         contract_identity,
@@ -132,9 +143,25 @@ insert into GMS4.sms_user_login_archive
         login_type_id,
         api_key,
         device_id,
+        archive_date
+    )
+    SELECT
+        login_id,
+        physical_customer_data_id,
+        contract_identity,
+        contract_type_id,
+        key_access_value,
+        key_access_type_id,
+        ext_system_id,
+        login_date,
+        logout_date,
+        null,
+        provider_id,
+        login_type_id,
+        api_key,
+        null,
         CURRENT DATE
-    FROM
-        sms_user_login
+    FROM GMS4.sms_user_login
     WHERE
         login_id IN
         (
@@ -143,8 +170,7 @@ insert into GMS4.sms_user_login_archive
             --            so let's fetch the first 500 records
             SELECT
                 login_id
-            FROM
-                sms_user_login
+            FROM GMS4.sms_user_login
             ORDER BY
                 login_id
             FETCH
@@ -153,11 +179,8 @@ insert into GMS4.sms_user_login_archive
     AND login_date < (CURRENT DATE - 3 years);
 commit;
 
---
--- {query32}: consumes the login_id's frmo {query31} and deletes them
 DELETE
-FROM
-    sms_user_login
+FROM GMS4.sms_user_login
 WHERE
     login_id IN
                  (
@@ -166,19 +189,11 @@ WHERE
                 --            by fetching all rows archived today and joining with
                 --            the source table - this query returns those login_ids that exist
                 --            in both the login table AND the archive table
-                 SELECT DISTINCT
-                     sula.login_id
-                 FROM
-                     sms_user_login_archive sula
-                 INNER JOIN
-                     sms_user_login sul
-                 ON
-                     sula.login_id = sul.login_id
-                 WHERE
-                     sula.archive_date = CURRENT DATE
-                 ORDER BY
-                     sula.login_id
-                 FETCH
-                     FIRST 1000 ROWS ONLY);
+                 SELECT distinct sula.login_id
+                 FROM GMS4.sms_user_login_archive sula
+                 INNER JOIN GMS4.sms_user_login sul ON sula.login_id = sul.login_id
+                 WHERE sula.archive_date = CURRENT DATE
+                 ORDER BY sula.login_id
+                 FETCH FIRST 1000 ROWS ONLY);
 commit;
 

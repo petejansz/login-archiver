@@ -1,6 +1,24 @@
 -- see comments in archive-login.sql
 
 insert into GMS4.sms_user_login_failed_archive
+    (
+        login_id,
+        physical_customer_data_id,
+        contract_identity,
+        contract_type_id,
+        key_access_value,
+        key_access_type_id,
+        ext_system_id,
+        login_date,
+        logout_date,
+        ip_address,
+        result,
+        provider_id,
+        login_type_id,
+        api_key,
+        device_id,
+        archive_date
+    )
     SELECT
         login_id,
         physical_customer_data_id,
@@ -18,8 +36,7 @@ insert into GMS4.sms_user_login_failed_archive
         api_key,
         device_id,
         CURRENT DATE
-    FROM
-        SMS_USER_LOGIN_FAILED
+    FROM GMS4.sms_user_login_failed
     WHERE
         LOGIN_ID IN
         (
@@ -31,16 +48,14 @@ insert into GMS4.sms_user_login_failed_archive
                         row_number() over (partition BY physical_customer_data_id ORDER BY login_date
                         DESC) AS user_login_number,
                         login_id
-                    FROM
-                        sms_user_login_failed
+                    FROM GMS4.sms_user_login_failed
                     WHERE
                         physical_customer_data_id IN
                         (
                             
                             SELECT
                                 physical_customer_data_id
-                            FROM
-                                sms_user_login_failed
+                            FROM GMS4.sms_user_login_failed
                             GROUP BY
                                 physical_customer_data_id
                             HAVING
@@ -60,6 +75,24 @@ insert into GMS4.sms_user_login_failed_archive
 commit;
 
 insert into GMS4.sms_user_login_failed_archive
+    (
+        login_id,
+        physical_customer_data_id,
+        contract_identity,
+        contract_type_id,
+        key_access_value,
+        key_access_type_id,
+        ext_system_id,
+        login_date,
+        logout_date,
+        ip_address,
+        result,
+        provider_id,
+        login_type_id,
+        api_key,
+        device_id,
+        archive_date
+    )
     SELECT
         login_id,
         physical_customer_data_id,
@@ -77,15 +110,13 @@ insert into GMS4.sms_user_login_failed_archive
         api_key,
         device_id,
         CURRENT DATE
-    FROM
-        sms_user_login_failed
+    FROM GMS4.sms_user_login_failed
     WHERE
         login_id IN
         (
             SELECT
                 login_id
-            FROM
-                sms_user_login_failed
+            FROM GMS4.sms_user_login_failed
             ORDER BY
                 login_id
             FETCH
@@ -95,16 +126,15 @@ commit;
 
 DELETE
 FROM
-    sms_user_login_failed
+    GMS4.sms_user_login_failed
 WHERE
     login_id IN
                  (
                  SELECT DISTINCT
                      sula.login_id
-                 FROM
-                     sms_user_login_failed_archive sula
+                 FROM GMS4.sms_user_login_failed_archive sula
                  INNER JOIN
-                     sms_user_login_failed sul
+                     GMS4.sms_user_login_failed sul
                  ON
                      sula.login_id = sul.login_id
                  WHERE
