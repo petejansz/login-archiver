@@ -85,7 +85,7 @@ while [ $EXIT_CODE -eq 0 ]; do
 
     EXIT_CODE=$(isEmptyTableError $DB2_EXIT_CODE)
     if [[ $? -eq 0 ]]; then
-      ROWS_AFFECTED=$(grep -iC 1  -e "^DELETE" -e "^UPDATE" $LOGFILE | tail -3 | grep "rows affected" | tail -1 | cut -d: -f2 | xargs)
+      ROWS_AFFECTED=$(grep -iC 1 -e "^INSERT" -e "^DELETE" -e "^UPDATE" $LOGFILE | tail -3 | grep "rows affected" | tail -1 | cut -d: -f2 | xargs)
       if [ -z "$ROWS_AFFECTED" ]; then
         let ROWS_AFFECTED=0
       fi

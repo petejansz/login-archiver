@@ -7,36 +7,32 @@
 -- jcaplin: the following statements are not the best way of dealing with things,
 -- but it's the best we can do with the hand we have been dealt. NB: we play heavily
 -- into the fact that the clustered index on SMS_USER_LOGIN is LOGIN_ID by virtue of the
--- the fact it is the first index defined on the table and no explicit clustered index 
+-- the fact it is the first index defined on the table and no explicit clustered index
 -- exists. So we try and do the heavy lifting with "in LOGIN_ID order" as mind as much
 -- as possible...
 --
 -- We assume login ids are approximately incremental relative to time. Therefore, we
--- expect the leftmost entries in the table to be the oldest (smallest login_id - 
+-- expect the leftmost entries in the table to be the oldest (smallest login_id -
 -- clustered index). To cull records older than 3 years, we look at the first 500 rows in the
 -- table and select those away that are older than 3 years. If there is some disordering between
 -- login_id and login_date (i.e. the next login_id is higher but the actual login_date is lower)
--- then it's possible we'll have data 3 years and change old in the table... But that should 
+-- then it's possible we'll have data 3 years and change old in the table... But that should
 -- fix itself when the next calendar day kicks off
 --
 -- Note also for whatever reason, the login_id column in _archive is not unqique. There might be
 -- (are) dupes in there. We take advantage of that here. The job might finish across calendar dates
--- and so "CURRENT DATE" is no longer in context. It's ok - this thing is eventually consistent.
+-- and so "current date" is no longer in context. It's ok - this thing is eventually consistent.
 --
 -- We do a sweep for players with > 5 login records, then for > 3 year old logins. We copy
 -- 500 at most per iteration.
 --
--- Then we try to delete 1000 records in the archive table that are still in the source table. 
---
---
--- RUNSCOPE USER DATA:
+-- Then we try to delete 1000 records in the archive table that are still in the source table.
 --
 -- select value from GMS4.SMS_CUSTOMER_CONTACTS where SMS_CUSTOMER_CONTACTS.PHYSICAL_CUSTOMER_DATA_ID in
 --  (5387223, 5390759) and SMS_CUSTOMER_CONTACTS.CONTACT_TYPE_ID=1
 --
 -- dca_ren_staff@gtech.com
 -- calottomobileadm@gmail.com
---
 
 -- {query14}: THIS DEALS WITH PLAYER WHO HAVE > 5 LOGINS.
 --           Consume {query3} and insert into the archive table
@@ -73,7 +69,7 @@ insert into GMS4.sms_user_login_archive
         login_type_id,
         api_key,
         null,
-        CURRENT DATE
+        current date
     FROM
         SMS_USER_LOGIN
     WHERE
@@ -81,7 +77,7 @@ insert into GMS4.sms_user_login_archive
         (
             -- {query13}: fetch the first 500 login_ids from {query2} where the login record number
             --           (user_login_number) > 5 and then just to be extra safe - order by login id.
-            --           This is probably pointless but I'm keeping it because it makes me feel 
+            --           This is probably pointless but I'm keeping it because it makes me feel
             --           better.
             SELECT
                 LOGIN_ID
@@ -125,7 +121,7 @@ insert into GMS4.sms_user_login_archive
 commit;
 
 --
--- {query22}: consume all the login_id's from {query21} whose login_date is more than 
+-- {query22}: consume all the login_id's from {query21} whose login_date is more than
 --            three years old, pull the record and insert into archive.
 insert into GMS4.sms_user_login_archive
     (
@@ -160,12 +156,11 @@ insert into GMS4.sms_user_login_archive
         login_type_id,
         api_key,
         null,
-        CURRENT DATE
+        current date
     FROM GMS4.sms_user_login
     WHERE
         login_id IN
         (
-            --
             -- {query21}: see above - we assume login_id's increment approximately over time,
             --            so let's fetch the first 500 records
             SELECT
@@ -176,7 +171,7 @@ insert into GMS4.sms_user_login_archive
             FETCH
                 FIRST 500 rows only)
             -- {query21}
-    AND login_date < (CURRENT DATE - 3 years);
+    AND login_date < (current date - 1 years);
 commit;
 
 DELETE
@@ -184,7 +179,6 @@ FROM GMS4.sms_user_login
 WHERE
     login_id IN
                  (
-                --
                 -- {query31}: _ARCHIVE is clustered on ARCHIVE_DATE. We capitalize on that
                 --            by fetching all rows archived today and joining with
                 --            the source table - this query returns those login_ids that exist
@@ -192,7 +186,7 @@ WHERE
                  SELECT distinct sula.login_id
                  FROM GMS4.sms_user_login_archive sula
                  INNER JOIN GMS4.sms_user_login sul ON sula.login_id = sul.login_id
-                 WHERE sula.archive_date = CURRENT DATE
+                 WHERE sula.archive_date = current date
                  ORDER BY sula.login_id
                  FETCH FIRST 1000 ROWS ONLY);
 commit;

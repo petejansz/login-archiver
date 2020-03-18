@@ -52,7 +52,7 @@ insert into GMS4.sms_user_login_failed_archive
                     WHERE
                         physical_customer_data_id IN
                         (
-                            
+
                             SELECT
                                 physical_customer_data_id
                             FROM GMS4.sms_user_login_failed
@@ -121,7 +121,7 @@ insert into GMS4.sms_user_login_failed_archive
                 login_id
             FETCH
                 FIRST 500 rows only)
-    AND login_date < (CURRENT DATE - 3 years);
+    AND login_date < (CURRENT DATE - 1 years);
 commit;
 
 DELETE
